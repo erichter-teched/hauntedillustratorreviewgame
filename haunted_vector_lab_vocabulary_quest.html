@@ -1,0 +1,1576 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Haunted Vector Lab: Illustrator Vocabulary Quest</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        spooky: {
+                            bg: '#0c0714',
+                            card: '#180e29',
+                            border: '#3b1c66',
+                            purple: '#8b5cf6',
+                            green: '#22c55e',
+                            orange: '#f97316',
+                            ghost: '#a7f3d0',
+                            crimson: '#ef4444'
+                        }
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        mono: ['Fira Code', 'monospace']
+                    },
+                    animation: {
+                        'pulse-slow': 'pulse 3s infinite',
+                        'float': 'float 4s ease-in-out infinite',
+                        'glow': 'glow 2s ease-in-out infinite alternate',
+                    },
+                    keyframes: {
+                        float: {
+                            '0%, 100%': { transform: 'translateY(0px)' },
+                            '50%': { transform: 'translateY(-10px)' },
+                        },
+                        glow: {
+                            '0%': { boxShadow: '0 0 5px rgba(139, 92, 246, 0.5)' },
+                            '100%': { boxShadow: '0 0 20px rgba(34, 197, 94, 0.8)' }
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons for graphics & Illustrator tools -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@300;400;600;700;800&family=Fira+Code:wght@400;600&display=swap" rel="stylesheet">
+    
+    <style>
+        .font-creepster { font-family: 'Creepster', cursive; }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #0c0714; }
+        ::-webkit-scrollbar-thumb { background: #3b1c66; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #8b5cf6; }
+        
+        /* Card Flip Styles */
+        .perspective-1000 { perspective: 1000px; }
+        .transform-style-3d { transform-style: preserve-3d; }
+        .backface-hidden { backface-visibility: hidden; }
+        .rotate-y-180 { transform: rotateY(180deg); }
+        
+        /* Glow Effects */
+        .glow-orange { filter: drop-shadow(0 0 10px rgba(249, 115, 22, 0.6)); }
+        .glow-green { filter: drop-shadow(0 0 10px rgba(34, 197, 94, 0.6)); }
+        .glow-purple { filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.6)); }
+    </style>
+</head>
+<body class="bg-spooky-bg text-slate-100 min-h-screen flex flex-col font-sans selection:bg-spooky-orange selection:text-black overflow-x-hidden">
+
+    <!-- Background Canvas for Interactive Vector Ghost Particles -->
+    <canvas id="bgCanvas" class="fixed inset-0 pointer-events-none z-0 opacity-40"></canvas>
+
+    <!-- Notification / Toast Container -->
+    <div id="toastContainer" class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Main Header / Navigation Bar -->
+    <header class="relative z-10 border-b border-spooky-border bg-spooky-bg/80 backdrop-blur-md sticky top-0 px-4 py-3">
+        <div class="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-4">
+            <div class="flex items-center space-x-3 cursor-pointer" onclick="app.switchView('home')">
+                <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-spooky-orange via-purple-600 to-spooky-green flex items-center justify-center shadow-lg shadow-purple-900/40">
+                    <i class="fa-solid fa-pen-nib text-white text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-creepster tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-purple-300 to-green-400">
+                        HAUNTED VECTOR LAB
+                    </h1>
+                    <p class="text-xs text-purple-300/80 font-mono">Adobe Illustrator • 8th Grade AAVTC (70 Terms)</p>
+                </div>
+            </div>
+
+            <!-- Stats Bar -->
+            <div class="flex items-center gap-4 bg-spooky-card border border-spooky-border px-4 py-1.5 rounded-full text-xs font-mono">
+                <div class="flex items-center gap-1.5 text-amber-400" title="XP Score">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span id="statXP" class="font-bold text-sm">0</span> <span class="text-slate-400">XP</span>
+                </div>
+                <div class="h-4 w-px bg-spooky-border"></div>
+                <div class="flex items-center gap-1.5 text-spooky-orange" title="Curse Break Streak">
+                    <i class="fa-solid fa-fire"></i>
+                    <span id="statStreak" class="font-bold text-sm">0</span> <span class="text-slate-400">Streak</span>
+                </div>
+                <div class="h-4 w-px bg-spooky-border"></div>
+                <div class="flex items-center gap-1.5 text-spooky-green" title="Mastered Terms">
+                    <i class="fa-solid fa-skull"></i>
+                    <span id="statMastered" class="font-bold text-sm">0</span>/<span id="statTotal" class="font-bold text-sm">70</span>
+                </div>
+            </div>
+
+            <!-- Header Action Controls -->
+            <div class="flex items-center gap-2">
+                <select id="voiceSelect" class="px-2.5 py-2 rounded-lg bg-spooky-card border border-spooky-border text-slate-300 hover:border-cyan-400 focus:border-cyan-400 focus:outline-none text-xs font-mono max-w-[140px] sm:max-w-[200px] truncate cursor-pointer" title="Select Text-to-Speech Voice" onchange="app.onVoiceChange()">
+                    <option value="">Loading Voices...</option>
+                </select>
+                <button onclick="app.toggleSound()" id="soundBtn" class="px-3 py-2 rounded-lg bg-spooky-card border border-spooky-border text-slate-300 hover:text-spooky-orange transition hover:border-spooky-orange flex items-center gap-2 text-xs font-mono" title="Toggle Sound Effects">
+                    <i class="fa-solid fa-volume-high text-spooky-orange" id="soundIcon"></i>
+                    <span>Audio SFX</span>
+                </button>
+                <button onclick="app.toggleAutoTTS()" id="ttsBtn" class="px-3 py-2 rounded-lg bg-spooky-card border border-spooky-border text-slate-300 hover:text-cyan-400 transition hover:border-cyan-400 flex items-center gap-2 text-xs font-mono" title="Toggle HTML5 Web Speech API Read-Aloud">
+                    <i class="fa-solid fa-comment-dots text-cyan-400" id="ttsIcon"></i>
+                    <span id="ttsBtnLabel">Auto Read: Off</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Application Container -->
+    <main class="relative z-10 flex-1 max-w-7xl w-full mx-auto p-4 md:p-6 flex flex-col">
+
+        <!-- ================= VIEW 1: HOME DASHBOARD ================= -->
+        <section id="viewHome" class="space-y-6 animate-fade-in">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-2xl bg-gradient-to-r from-purple-950 via-spooky-card to-slate-950 border border-spooky-border p-6 md:p-8 shadow-2xl">
+                <div class="absolute -right-10 -bottom-10 opacity-15 pointer-events-none text-spooky-orange">
+                    <i class="fa-solid fa-ghost text-9xl"></i>
+                </div>
+                <div class="max-w-2xl space-y-3">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-spooky-orange/10 border border-spooky-orange/30 text-spooky-orange text-xs font-mono">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> 70 Terms • Independent Study Quest
+                    </div>
+                    <h2 class="text-3xl md:text-5xl font-creepster tracking-wide text-white leading-tight">
+                        Break the 70 Vector Curses!
+                    </h2>
+                    <p class="text-slate-300 text-sm md:text-base leading-relaxed">
+                        Welcome, Young Vector Alchemist! The Haunted Illustrator Mansion is overrun by 70 rogue Bézier specters. Choose a game mode, select your Illustrator practice category, and master all vector concepts to restore the realm!
+                    </p>
+                    <div class="pt-2 flex flex-wrap gap-3">
+                        <a href="#modesSection" class="px-6 py-3 rounded-xl bg-gradient-to-r from-spooky-orange to-amber-600 text-white font-bold text-sm shadow-lg shadow-orange-950/50 hover:scale-105 active:scale-95 transition flex items-center gap-2">
+                            <i class="fa-solid fa-gamepad text-lg"></i> Choose Game Mode
+                        </a>
+                        <button onclick="app.quickStartRandom()" class="px-5 py-3 rounded-xl bg-spooky-card border border-spooky-border hover:bg-purple-900/30 text-slate-200 text-sm font-semibold transition flex items-center gap-2">
+                            <i class="fa-solid fa-dice text-spooky-green"></i> Quick Play (Random Mode)
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Game Mode Selection Cards Grid -->
+            <div id="modesSection">
+                <h3 class="text-xl font-bold font-mono text-purple-300 mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-gamepad text-spooky-green"></i> Select Game Mode
+                </h3>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+
+                    <!-- Mode 1: Dungeon RPG Quiz -->
+                    <div onclick="app.openChunkSelector('dungeon')" class="group cursor-pointer rounded-2xl bg-spooky-card border border-spooky-border p-5 hover:border-spooky-orange transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-orange-950/30 flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-orange-500/20 border border-orange-500/40 text-spooky-orange flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-skull"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-100 group-hover:text-spooky-orange transition">Phantom Dungeon</h4>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                                Defeat spooky Illustrator monsters by answering questions and using spell scrolls across your chosen category.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-mono text-spooky-orange">
+                            <span>Battle Mode</span>
+                            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+                        </div>
+                    </div>
+
+                    <!-- Mode 2: Node Slice / Balloon Arcade -->
+                    <div onclick="app.openChunkSelector('arcade')" class="group cursor-pointer rounded-2xl bg-spooky-card border border-spooky-border p-5 hover:border-spooky-green transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-green-950/30 flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-green-500/20 border border-green-500/40 text-spooky-green flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-bullseye"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-100 group-hover:text-spooky-green transition">Node Slice Arcade</h4>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                                Floating anchor points are rising! Rapidly click or tap the correct vector node before time runs out.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-mono text-spooky-green">
+                            <span>Speed Arcade</span>
+                            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+                        </div>
+                    </div>
+
+                    <!-- Mode 3: Graveyard Matching Memory -->
+                    <div onclick="app.openChunkSelector('memory')" class="group cursor-pointer rounded-2xl bg-spooky-card border border-spooky-border p-5 hover:border-purple-500 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-purple-950/30 flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-purple-500/20 border border-purple-500/40 text-purple-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-monument"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-100 group-hover:text-purple-400 transition">Graveyard Memory</h4>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                                Flip spooky tombstones to pair vector Illustrator tools with their corresponding definitions.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-mono text-purple-400">
+                            <span>Matching Altar</span>
+                            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+                        </div>
+                    </div>
+
+                    <!-- Mode 4: Haunted Flashcards -->
+                    <div onclick="app.openChunkSelector('flashcards')" class="group cursor-pointer rounded-2xl bg-spooky-card border border-spooky-border p-5 hover:border-cyan-500 transition-all duration-300 hover:-translate-y-1 shadow-lg hover:shadow-cyan-950/30 flex flex-col justify-between">
+                        <div>
+                            <div class="w-12 h-12 rounded-xl bg-cyan-500/20 border border-cyan-500/40 text-cyan-400 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+                                <i class="fa-solid fa-layer-group"></i>
+                            </div>
+                            <h4 class="text-lg font-bold text-slate-100 group-hover:text-cyan-400 transition">Spooky Flashcards</h4>
+                            <p class="text-xs text-slate-400 mt-2 leading-relaxed">
+                                Self-paced mastery study deck with audio pronunciation, hints, and spaced repetition tracking.
+                            </p>
+                        </div>
+                        <div class="mt-4 pt-3 border-t border-slate-800 flex items-center justify-between text-xs font-mono text-cyan-400">
+                            <span>Self-Paced Deck</span>
+                            <i class="fa-solid fa-arrow-right group-hover:translate-x-1 transition"></i>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Trophy Room & Achievements -->
+            <div class="rounded-2xl bg-spooky-card border border-spooky-border p-6 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg font-bold font-mono text-amber-400 flex items-center gap-2">
+                        <i class="fa-solid fa-trophy"></i> Vector Relics & Badges
+                    </h3>
+                    <span id="badgeCountText" class="text-xs font-mono text-slate-400">0 / 20 Unlocked</span>
+                </div>
+                <div id="badgesGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                    <!-- Dynamic badges rendered by JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= STEP 2: CATEGORY / CHUNK SELECTION MODAL ================= -->
+        <div id="chunkModal" class="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm hidden flex items-center justify-center p-4">
+            <div class="bg-spooky-card border-2 border-spooky-orange rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-5 animate-fade-in relative max-h-[90vh] overflow-y-auto">
+                <button onclick="app.closeChunkModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+
+                <div>
+                    <span class="text-xs font-mono text-spooky-orange font-bold uppercase tracking-wider">Step 2: Practice Focus</span>
+                    <h3 id="modalModeTitle" class="text-2xl font-bold font-creepster text-slate-100 mt-1">
+                        Select Illustrator Category
+                    </h3>
+                    <p class="text-xs text-slate-400 font-mono mt-1">Choose a specific topic chunk or practice all 70 terms together!</p>
+                </div>
+
+                <!-- Chunk Options Grid -->
+                <div id="chunkGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Dynamic Chunk Category Buttons injected here -->
+                </div>
+            </div>
+        </div>
+
+        <!-- ================= VIEW 2: DUNGEON RPG BATTLE MODE ================= -->
+        <section id="viewDungeon" class="hidden space-y-6 animate-fade-in flex-1 flex flex-col">
+            <!-- Battle Header Bar -->
+            <div class="flex items-center justify-between bg-spooky-card border border-spooky-border px-4 py-3 rounded-xl">
+                <button onclick="app.switchView('home')" class="text-xs font-mono text-slate-400 hover:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-chevron-left"></i> Leave Dungeon
+                </button>
+                <div class="text-xs font-mono text-spooky-purple font-bold" id="dungeonCategoryBadge">Category: All Terms</div>
+                <div class="flex items-center gap-4 text-xs font-mono">
+                    <span id="dungeonStage" class="text-spooky-orange font-bold">Floor 1 / 10</span>
+                    <div class="w-32 bg-slate-800 rounded-full h-2 overflow-hidden border border-slate-700">
+                        <div id="dungeonProgress" class="bg-spooky-orange h-full w-10 transition-all duration-300"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- RPG Battle Arena -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-center bg-gradient-to-b from-purple-950/40 via-spooky-card to-black/80 border border-spooky-border rounded-2xl p-6 relative overflow-hidden shadow-2xl">
+                <!-- Hero Column -->
+                <div class="flex flex-col items-center text-center space-y-3 z-10">
+                    <div class="relative">
+                        <div class="w-28 h-28 md:w-36 md:h-36 rounded-2xl bg-purple-900/40 border-2 border-spooky-purple flex items-center justify-center shadow-lg shadow-purple-900/50 glow-purple">
+                            <i class="fa-solid fa-hat-wizard text-6xl text-purple-300 animate-float"></i>
+                        </div>
+                        <span class="absolute -top-2 -right-2 bg-spooky-purple text-white text-xs font-bold px-2 py-0.5 rounded-full border border-purple-300">
+                            You
+                        </span>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-slate-200">Vector Wizard</h4>
+                        <!-- Hero HP Bar -->
+                        <div class="w-44 bg-slate-900 border border-slate-700 rounded-full h-3.5 mt-1 overflow-hidden relative">
+                            <div id="heroHpBar" class="bg-gradient-to-r from-red-600 to-emerald-500 h-full w-full transition-all duration-300"></div>
+                            <span id="heroHpText" class="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-white shadow-sm">100 / 100 HP</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Versus Divider -->
+                <div class="hidden md:flex absolute inset-0 items-center justify-center pointer-events-none">
+                    <div class="text-4xl font-creepster text-spooky-orange/40">VS</div>
+                </div>
+
+                <!-- Enemy Column -->
+                <div class="flex flex-col items-center text-center space-y-3 z-10">
+                    <div class="relative">
+                        <div id="enemyBox" class="w-28 h-28 md:w-36 md:h-36 rounded-2xl bg-red-950/40 border-2 border-spooky-crimson flex items-center justify-center shadow-lg shadow-red-900/50 glow-orange">
+                            <i id="enemyIcon" class="fa-solid fa-ghost text-6xl text-spooky-orange animate-bounce"></i>
+                        </div>
+                        <span id="enemyNameBadge" class="absolute -top-2 -right-2 bg-spooky-crimson text-white text-xs font-bold px-2 py-0.5 rounded-full border border-red-300">
+                            Bézier Banshee
+                        </span>
+                    </div>
+                    <div>
+                        <h4 id="enemyTitle" class="font-bold text-spooky-orange">Phantom Anchor Ghost</h4>
+                        <!-- Enemy HP Bar -->
+                        <div class="w-44 bg-slate-900 border border-slate-700 rounded-full h-3.5 mt-1 overflow-hidden relative">
+                            <div id="enemyHpBar" class="bg-spooky-crimson h-full w-full transition-all duration-300"></div>
+                            <span id="enemyHpText" class="absolute inset-0 flex items-center justify-center text-[10px] font-mono font-bold text-white shadow-sm">100 / 100 HP</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Question Box -->
+            <div class="bg-spooky-card border border-spooky-border rounded-2xl p-6 space-y-6 shadow-xl flex-1 flex flex-col justify-between">
+                <div>
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-mono text-slate-400">Identify the correct Illustrator term or definition:</span>
+                        <span id="dungeonTimer" class="text-xs font-mono text-amber-400 font-bold"><i class="fa-solid fa-clock"></i> 20s</span>
+                    </div>
+                    <div class="flex items-center justify-between gap-3">
+                        <h3 id="dungeonQuestion" class="text-lg md:text-xl font-bold text-slate-100 leading-snug flex-1">
+                            Question text loading...
+                        </h3>
+                        <button onclick="app.speakCurrentDungeonQuestion()" class="p-2.5 rounded-xl bg-purple-900/40 hover:bg-purple-800 text-cyan-300 border border-purple-500/40 transition shrink-0" title="Read Question Aloud (Web Speech API)">
+                            <i class="fa-solid fa-volume-high text-base"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Answer Choices -->
+                <div id="dungeonOptions" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <!-- Dynamic Answer Options inserted here -->
+                </div>
+
+                <!-- Power-Up Spell Bar -->
+                <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+                    <span class="text-xs font-mono text-purple-300">Spell Scrolls:</span>
+                    <div class="flex gap-2">
+                        <button onclick="app.useSpell('hint')" id="spellHint" class="px-3 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/50 text-xs font-mono text-purple-200 hover:bg-purple-800/60 transition disabled:opacity-40" title="Reveal hint">
+                            <i class="fa-solid fa-lightbulb text-amber-400"></i> Ghost Hint (<span id="hintCount">2</span>)
+                        </button>
+                        <button onclick="app.useSpell('fifty')" id="spell5050" class="px-3 py-1.5 rounded-lg bg-purple-900/40 border border-purple-500/50 text-xs font-mono text-purple-200 hover:bg-purple-800/60 transition disabled:opacity-40" title="Remove 2 wrong answers">
+                            <i class="fa-solid fa-wand-magic"></i> 50/50 Slice (<span id="fiftyCount">1</span>)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VIEW 3: SPEED ARCADE MODE ================= -->
+        <section id="viewArcade" class="hidden space-y-6 animate-fade-in flex-1 flex flex-col">
+            <!-- Arcade Header -->
+            <div class="flex items-center justify-between bg-spooky-card border border-spooky-border px-4 py-3 rounded-xl">
+                <button onclick="app.switchView('home')" class="text-xs font-mono text-slate-400 hover:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-chevron-left"></i> Exit Arcade
+                </button>
+                <div class="text-xs font-mono text-spooky-green font-bold" id="arcadeCategoryBadge">Category: All Terms</div>
+                <div class="flex items-center gap-6 font-mono text-sm">
+                    <div>Time Left: <span id="arcadeTime" class="font-bold text-spooky-orange text-base">45s</span></div>
+                    <div>Score: <span id="arcadeScore" class="font-bold text-spooky-green text-base">0</span></div>
+                </div>
+            </div>
+
+            <!-- Arcade Play Area -->
+            <div class="flex-1 bg-gradient-to-b from-spooky-card to-black border border-spooky-border rounded-2xl p-6 relative overflow-hidden flex flex-col justify-between shadow-2xl">
+                <div class="bg-purple-950/60 border border-purple-500/30 rounded-xl p-4 text-center flex items-center justify-between gap-3">
+                    <div class="flex-1">
+                        <p class="text-xs font-mono text-purple-300 uppercase tracking-wider mb-1">Match definition to the correct floating node:</p>
+                        <h3 id="arcadePrompt" class="text-lg md:text-xl font-bold text-slate-100">
+                            Target definition loading...
+                        </h3>
+                    </div>
+                    <button onclick="app.speakCurrentArcadePrompt()" class="p-2 rounded-xl bg-purple-900/50 hover:bg-purple-800 text-cyan-300 border border-purple-500/40 transition shrink-0" title="Read Prompt Aloud (Web Speech API)">
+                        <i class="fa-solid fa-volume-high"></i>
+                    </button>
+                </div>
+
+                <!-- Floating Targets Container -->
+                <div id="arcadeNodesContainer" class="relative min-h-[300px] flex-1 my-4 flex flex-wrap items-center justify-center gap-4 p-4">
+                    <!-- Floating Nodes inserted dynamically -->
+                </div>
+
+                <div class="text-center text-xs font-mono text-slate-400">
+                    <i class="fa-solid fa-circle-info"></i> Fast answers award combo multipliers!
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= VIEW 4: MEMORY GRAVEYARD MODE ================= -->
+        <section id="viewMemory" class="hidden space-y-6 animate-fade-in flex-1 flex flex-col">
+            <!-- Memory Header -->
+            <div class="flex items-center justify-between bg-spooky-card border border-spooky-border px-4 py-3 rounded-xl">
+                <button onclick="app.switchView('home')" class="text-xs font-mono text-slate-400 hover:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-chevron-left"></i> Back to Mansion
+                </button>
+                <div class="text-xs font-mono text-purple-400 font-bold" id="memoryCategoryBadge">Category: All Terms</div>
+                <div class="flex items-center gap-6 font-mono text-sm">
+                    <div>Moves: <span id="memoryMoves" class="font-bold text-purple-400">0</span></div>
+                    <div>Matches: <span id="memoryMatches" class="font-bold text-spooky-green">0/6</span></div>
+                </div>
+            </div>
+
+            <div class="text-center">
+                <p class="text-xs font-mono text-purple-300">Click a tombstone to uncover Illustrator terms and match them with their definitions!</p>
+            </div>
+
+            <!-- Memory Tiles Grid -->
+            <div id="memoryGrid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 flex-1">
+                <!-- Memory Cards JS rendered -->
+            </div>
+        </section>
+
+        <!-- ================= VIEW 5: FLASHCARDS STUDY MODE ================= -->
+        <section id="viewFlashcards" class="hidden space-y-6 animate-fade-in flex-1 flex flex-col items-center justify-center">
+            <div class="w-full max-w-2xl flex items-center justify-between bg-spooky-card border border-spooky-border px-4 py-3 rounded-xl mb-4">
+                <button onclick="app.switchView('home')" class="text-xs font-mono text-slate-400 hover:text-slate-100 flex items-center gap-2">
+                    <i class="fa-solid fa-chevron-left"></i> Back to Dashboard
+                </button>
+                <span id="flashcardCategoryBadge" class="text-xs font-mono text-cyan-400 font-bold">Category: All Terms</span>
+                <span id="flashcardTracker" class="text-xs font-mono text-cyan-400 font-bold">Card 1 / 70</span>
+            </div>
+
+            <!-- Flashcard 3D Container -->
+            <div class="w-full max-w-2xl h-80 perspective-1000 cursor-pointer group" onclick="app.flipCard()">
+                <div id="flashcardInner" class="relative w-full h-full transform-style-3d transition-transform duration-500 rounded-2xl border-2 border-spooky-border bg-spooky-card shadow-2xl p-8 flex flex-col justify-between">
+                    
+                    <!-- Front Side -->
+                    <div class="absolute inset-0 backface-hidden p-8 flex flex-col justify-between bg-gradient-to-br from-spooky-card via-purple-950/30 to-black rounded-2xl border border-purple-500/30">
+                        <div class="flex justify-between items-center text-xs font-mono text-purple-400">
+                            <span><i class="fa-solid fa-pen-nib"></i> Illustrator Term</span>
+                            <span>Click card to reveal definition <i class="fa-solid fa-rotate"></i></span>
+                        </div>
+                        <div class="text-center my-auto">
+                            <h2 id="flashcardTerm" class="text-3xl font-bold font-mono text-spooky-orange">
+                                Vector Graphic
+                            </h2>
+                        </div>
+                        <div class="flex justify-between items-center text-xs font-mono text-slate-500">
+                            <span>Haunted Study Deck</span>
+                            <button onclick="event.stopPropagation(); app.speakTerm()" class="p-2 rounded-lg bg-purple-900/40 hover:bg-purple-800 text-purple-200 transition" title="Read Aloud">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Back Side -->
+                    <div class="absolute inset-0 backface-hidden rotate-y-180 p-8 flex flex-col justify-between bg-gradient-to-br from-purple-950 via-spooky-card to-slate-950 rounded-2xl border border-spooky-green/40">
+                        <div class="flex justify-between items-center text-xs font-mono text-spooky-green">
+                            <span><i class="fa-solid fa-book-open"></i> Definition</span>
+                            <span>Click card to flip back <i class="fa-solid fa-rotate"></i></span>
+                        </div>
+                        <div class="text-center my-auto">
+                            <p id="flashcardDef" class="text-base md:text-lg text-slate-200 leading-relaxed font-sans">
+                                Scalable image made of paths defined by mathematical formulas.
+                            </p>
+                        </div>
+                        <div class="flex justify-between items-center text-xs font-mono text-slate-400">
+                            <span id="flashcardHintText" class="italic text-slate-400">Hint: Infinite resolution</span>
+                            <button onclick="event.stopPropagation(); app.speakDef()" class="p-2 rounded-lg bg-green-900/40 hover:bg-green-800 text-spooky-green transition" title="Read Aloud">
+                                <i class="fa-solid fa-volume-high"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Flashcard Control Buttons -->
+            <div class="w-full max-w-2xl flex items-center justify-between gap-4 mt-6">
+                <button onclick="app.prevCard()" class="px-5 py-3 rounded-xl bg-spooky-card border border-spooky-border hover:border-slate-500 text-slate-200 text-sm font-mono flex items-center gap-2">
+                    <i class="fa-solid fa-arrow-left"></i> Previous
+                </button>
+                <div class="flex gap-2">
+                    <button onclick="app.markMastery(false)" class="px-4 py-3 rounded-xl bg-red-950/50 border border-red-500/40 text-red-300 hover:bg-red-900/60 text-xs font-mono flex items-center gap-1.5" title="Mark for review">
+                        <i class="fa-solid fa-xmark"></i> Still Learning
+                    </button>
+                    <button onclick="app.markMastery(true)" class="px-4 py-3 rounded-xl bg-green-950/50 border border-green-500/40 text-spooky-green hover:bg-green-900/60 text-xs font-mono flex items-center gap-1.5" title="Mark as mastered">
+                        <i class="fa-solid fa-check"></i> Mastered!
+                    </button>
+                </div>
+                <button onclick="app.nextCard()" class="px-5 py-3 rounded-xl bg-spooky-card border border-spooky-border hover:border-slate-500 text-slate-200 text-sm font-mono flex items-center gap-2">
+                    Next <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="relative z-10 border-t border-spooky-border bg-spooky-bg/80 text-center py-4 text-xs font-mono text-slate-500">
+        Haunted Vector Lab • 8th Grade Principles of AAVTC • 70 Adobe Illustrator Review Terms
+    </footer>
+
+    <!-- Application Logic Script -->
+    <script>
+        /**
+         * FULL 70 ADOBE ILLUSTRATOR VOCABULARY DECK CATEGORIZED BY CURRICULUM CHUNKS
+         * Formatted for 8th Grade Principles of AAVTC
+         */
+        const CHUNK_CATEGORIES = [
+            { id: 'all', name: '🎃 All 70 Illustrator Terms', desc: 'Full Master Challenge across all unit sections' },
+            { id: 'workspace', name: '🖥️ 1. Workspace & Interface', desc: 'Control Bar, Artboards, Canvas, Bleed, Panels & Menus' },
+            { id: 'tools', name: '🖱️ 2. Tools & Selection', desc: 'Selection, Direct Selection, Pen Tool, Brush & Shape tools' },
+            { id: 'concepts', name: '📐 3. Vector Concepts & Paths', desc: 'Anchor Points, Paths, Handles, Vector vs Raster, Resolution' },
+            { id: 'color', name: '🎨 4. Color, Fill & Gradients', desc: 'RGB, CMYK, Fill, Stroke, Swatches, Eyedropper & Gradients' },
+            { id: 'typography', name: '🔤 5. Typography & Text', desc: 'Type Tools, Leading, Kerning, Tracking & Create Outlines' },
+            { id: 'transform', name: '🗂️ 6. Layers, Masks & Transform', desc: 'Layers, Grouping, Align, Isolation Mode & Clipping Masks' },
+            { id: 'pathfinder', name: '⚡ 7. Pathfinder & Exporting', desc: 'Pathfinder, Shape Builder, Image Trace, SVG, EPS & Formats' }
+        ];
+
+        const ALL_ILLUSTRATOR_TERMS = [
+            // CHUNK 1: WORKSPACE & INTERFACE (10 terms)
+            { term: "Control Bar", category: "workspace", definition: "Options bar located below the menu bar that displays contextual options for the currently selected tool or object.", hint: "Changes dynamically based on selected tool." },
+            { term: "Status Bar", category: "workspace", definition: "Bar at the bottom left of the application window showing zoom percentage and current tool instructions.", hint: "Shows zoom % at the bottom." },
+            { term: "Workspace Switcher", category: "workspace", definition: "Menu at the top right used to switch between preset panel layouts like Essentials, Typography, or Painting.", hint: "Presets for panel layouts." },
+            { term: "Menu Bar", category: "workspace", definition: "Top banner containing drop-down menus such as File, Edit, Object, Type, Select, Effect, View, and Window.", hint: "Top dropdown navigation." },
+            { term: "Artboard", category: "workspace", definition: "The designated printable or exportable canvas work area in an Illustrator document.", hint: "The 'pages' in your document." },
+            { term: "Artboard Tool (Shift+O)", category: "workspace", definition: "Tool used to create, resize, reorder, and organize multiple artboards within a single document.", hint: "Shortcut Shift+O." },
+            { term: "Canvas", category: "workspace", definition: "The large scratch area surrounding artboards where temporary graphics can be placed.", hint: "Scratchboard area outside artboards." },
+            { term: "Bleed", category: "workspace", definition: "Extra area outside the artboard trim edge to ensure print colors extend fully to the edge after trimming.", hint: "Red border for print trimming." },
+            { term: "Panels & Docks", category: "workspace", definition: "Collapsible tool windows stacked along the right side of the screen containing settings like Layers, Swatches, and Align.", hint: "Docked tool windows on the right." },
+            { term: "Rulers & Guides", category: "workspace", definition: "Measurement rulers and drag-out non-printing lines used to precisely align objects on artboards.", hint: "Press Ctrl+R / Cmd+R to toggle." },
+
+            // CHUNK 2: TOOLS & SELECTION (10 terms)
+            { term: "Selection Tool (V)", category: "tools", definition: "Black arrow tool used to select, transform, move, resize, and rotate entire objects or groups.", hint: "Black arrow cursor." },
+            { term: "Direct Selection Tool (A)", category: "tools", definition: "White arrow tool used to select, move, or modify individual anchor points and path segments.", hint: "White arrow cursor." },
+            { term: "Group Selection Tool", category: "tools", definition: "Tool used to select a single object within a group or sub-groups without ungrouping.", hint: "Plus sign next to arrow icon." },
+            { term: "Magic Wand Tool (Y)", category: "tools", definition: "Tool used to select objects with similar fill colors, stroke colors, or stroke weights across the artboard.", hint: "Selects matching color objects." },
+            { term: "Lasso Tool (Q)", category: "tools", definition: "Freehand selection tool used to drag around specific anchor points or objects to select them.", hint: "Freehand lasso loop selector." },
+            { term: "Pen Tool (P)", category: "tools", definition: "Primary vector drawing tool used to create precise straight lines and smooth Bézier curves by placing anchor points.", hint: "The fundamental vector tool." },
+            { term: "Curvature Tool (Shift+~)", category: "tools", definition: "Intuitive drawing tool that automatically draws and adjusts smooth curves without complex direction handles.", hint: "Simplifies drawing curves." },
+            { term: "Pencil Tool (N)", category: "tools", definition: "Freehand path drawing tool that automatically creates smooth vector paths as you draw.", hint: "Freehand drawing tool." },
+            { term: "Paintbrush Tool (B)", category: "tools", definition: "Tool that applies stylized vector brush strokes (Calligraphic, Scatter, Art, Bristle, Pattern) to paths.", hint: "Applies artistic brush strokes." },
+            { term: "Blob Brush Tool (Shift+B)", category: "tools", definition: "Tool that draws filled compound paths that automatically merge with overlapping shapes of the same color.", hint: "Creates filled expanded shapes." },
+
+            // CHUNK 3: VECTOR CONCEPTS & PATHS (10 terms)
+            { term: "Vector Graphic", category: "concepts", definition: "Scalable digital image composed of mathematical formulas defining points, lines, curves, and shapes.", hint: "Infinitely scalable with crisp edges." },
+            { term: "Raster Graphic", category: "concepts", definition: "An image made of a fixed grid of colored pixels that pixelates and loses quality when scaled up.", hint: "Photographs are raster images." },
+            { term: "Resolution Independence", category: "concepts", definition: "The ability of vector graphics to be resized to any scale without losing quality or sharpness.", hint: "Crisp at any size." },
+            { term: "Anchor Point", category: "concepts", definition: "Square nodes along a vector path that define where lines start, end, or change direction.", hint: "Points holding paths together." },
+            { term: "Path", category: "concepts", definition: "A line made of one or more straight or curved segments connected by anchor points.", hint: "Vector outline line." },
+            { term: "Path Segment", category: "concepts", definition: "The line or curve section located between two connected anchor points.", hint: "Line between two anchors." },
+            { term: "Direction Handle", category: "concepts", definition: "Control arms attached to smooth anchor points used to manipulate curve arc and direction.", hint: "Pull handles to curve paths." },
+            { term: "Open Path", category: "concepts", definition: "A vector line with two distinct, unconnected end points, like a spiral or arc.", hint: "Endpoints do not connect." },
+            { term: "Closed Path", category: "concepts", definition: "A continuous vector shape where the starting and ending anchor points are joined, like a circle.", hint: "Continuous enclosed shape." },
+            { term: "Join Command (Ctrl+J)", category: "concepts", definition: "Command used to connect two open endpoint anchors with a new path segment.", hint: "Connects two open anchor points." },
+
+            // CHUNK 4: COLOR, FILL & GRADIENTS (10 terms)
+            { term: "RGB Color Mode", category: "color", definition: "Additive color mode using Red, Green, and Blue light designed for digital screen displays.", hint: "Best for web and screen art." },
+            { term: "CMYK Color Mode", category: "color", definition: "Subtractions color mode using Cyan, Magenta, Yellow, and Key (Black) ink designed for commercial printing.", hint: "Standard for physical print media." },
+            { term: "Fill", category: "color", definition: "The inner color, pattern, or gradient placed inside a closed vector path or shape.", hint: "Inside color of a shape." },
+            { term: "Stroke", category: "color", definition: "The visible outline, border color, and line weight assigned along a vector path.", hint: "Border or outline of a path." },
+            { term: "Swatches Panel", category: "color", definition: "Panel storing saved colors, gradients, patterns, and global color swatches for quick reuse.", hint: "Saved color palette window." },
+            { term: "Eyedropper Tool (I)", category: "color", definition: "Tool used to sample and copy color, stroke weight, or text formatting from artwork.", hint: "Samples color from objects." },
+            { term: "Gradient Tool (G)", category: "color", definition: "Tool used to adjust the angle, direction, length, and origin of linear or radial color blends.", hint: "Adjusts color transitions." },
+            { term: "Color Stop", category: "color", definition: "Points along a gradient slider indicating specific colors where smooth transitions occur.", hint: "Color points on gradient bar." },
+            { term: "Gradient Mesh", category: "color", definition: "A grid-based vector tool that allows multi-colored photorealistic shading and continuous color blending.", hint: "3D realistic vector shading." },
+            { term: "Spot Color", category: "color", definition: "A premixed specialty ink (like Pantone) used in printing instead of standard CMYK process blends.", hint: "Pantone or custom specialty ink." },
+
+            // CHUNK 5: TYPOGRAPHY & TEXT (10 terms)
+            { term: "Type Tool (T)", category: "typography", definition: "Primary tool used to enter point text or drag text boxes for paragraph type on artboards.", hint: "Creates text objects." },
+            { term: "Area Type Tool", category: "typography", definition: "Tool that flows and wraps text strictly within the boundaries of a closed vector shape.", hint: "Fills shape interiors with text." },
+            { term: "Type on a Path Tool", category: "typography", definition: "Tool that attaches text so it flows along the exact curve or contour of a vector path.", hint: "Text follows curved paths." },
+            { term: "Leading", category: "typography", definition: "The vertical space between baselines of consecutive lines of text.", hint: "Line spacing height." },
+            { term: "Kerning", category: "typography", definition: "The adjustment of space between a specific pair of individual adjacent characters.", hint: "Space between two letters." },
+            { term: "Tracking", category: "typography", definition: "The overall uniform spacing applied across a range or block of text characters.", hint: "Overall letter spacing." },
+            { term: "Create Outlines (Ctrl+Shift+O)", category: "typography", definition: "Command that converts editable live font characters into permanent editable vector paths.", hint: "Turns text into vector shapes." },
+            { term: "Point Type", category: "typography", definition: "Text created by clicking once; expands infinitely horizontally without automatic wrapping.", hint: "Single click type entry." },
+            { term: "Area Type Box", category: "typography", definition: "Text box created by clicking and dragging; automatically wraps text at the frame boundary.", hint: "Bounding box for text wrapping." },
+            { term: "Touch Type Tool (Shift+T)", category: "typography", definition: "Tool that allows individual characters in live text to be moved, scaled, and rotated independently.", hint: "Manipulate individual characters." },
+
+            // CHUNK 6: LAYERS, MASKS & TRANSFORM (10 terms)
+            { term: "Layers Panel", category: "transform", definition: "Panel used to organize, stack, lock, hide, and manage sublayers and artwork hierarchy.", hint: "Organizes stacking order." },
+            { term: "Group (Ctrl+G)", category: "transform", definition: "Command that binds multiple objects together so they move and transform as a single unit.", hint: "Shortcut Ctrl+G / Cmd+G." },
+            { term: "Ungroup (Ctrl+Shift+G)", category: "transform", definition: "Command that separates a grouped set of objects back into individual components.", hint: "Separates grouped items." },
+            { term: "Isolation Mode", category: "transform", definition: "Mode that isolates a group, layer, or sub-path so you can edit it without affecting surrounding artwork.", hint: "Double click group to isolate." },
+            { term: "Clipping Mask (Ctrl+7)", category: "transform", definition: "A top vector shape used as a frame to crop or restrict the visibility of underlying objects.", hint: "Top shape clips bottom artwork." },
+            { term: "Opacity Mask", category: "transform", definition: "Mask that uses black, white, and gray values in a transparency panel to fade artwork.", hint: "Uses grayscale transparency." },
+            { term: "Align Panel", category: "transform", definition: "Panel used to precisely align and distribute multiple objects relative to selection or artboards.", hint: "Align Center, Left, Right." },
+            { term: "Bounding Box", category: "transform", definition: "Rectangular outline with corner handles surrounding selected artwork used for quick scaling and rotation.", hint: "Box handles around selections." },
+            { term: "Rotate Tool (R)", category: "transform", definition: "Tool used to rotate objects around a fixed custom reference anchor point.", hint: "Rotates around reference point." },
+            { term: "Reflect Tool (O)", category: "transform", definition: "Tool used to flip objects horizontally or vertically across a specified axis line.", hint: "Flips objects symmetrically." },
+
+            // CHUNK 7: PATHFINDER & EXPORTING (10 terms)
+            { term: "Pathfinder Panel", category: "pathfinder", definition: "Panel containing operations to combine, subtract, intersect, or divide overlapping vector shapes.", hint: "Unite, Minus Front, Divide." },
+            { term: "Unite", category: "pathfinder", definition: "Pathfinder command that merges all selected overlapping shapes into a single unified vector path.", hint: "Combines shapes into one." },
+            { term: "Minus Front", category: "pathfinder", definition: "Pathfinder command that cuts out top overlapping objects from the bottommost shape.", hint: "Subtracts top shapes from bottom." },
+            { term: "Shape Builder Tool (Shift+M)", category: "pathfinder", definition: "Interactive tool used to merge or erase overlapping shape segments by clicking and dragging across them.", hint: "Drag to combine/erase paths." },
+            { term: "Image Trace", category: "pathfinder", definition: "Feature that automatically converts imported raster images or photos into editable vector artwork.", hint: "Converts photos to vector." },
+            { term: "Expand", category: "pathfinder", definition: "Command that converts strokes, text, image traces, or live effects into standard filled vector paths.", hint: "Converts effects into filled paths." },
+            { term: "AI File Format", category: "pathfinder", definition: "Native master vector file format for Adobe Illustrator preserving all layers, text, and editability.", hint: "Native editable Illustrator file." },
+            { term: "SVG File Format", category: "pathfinder", definition: "Scalable Vector Graphics open file standard widely used for responsive interactive web design.", hint: "Web vector graphic format." },
+            { term: "EPS File Format", category: "pathfinder", definition: "Encapsulated PostScript vector format commonly used for high-resolution commercial prepress printing.", hint: "Prepress vector exchange format." },
+            { term: "Graphic Styles", category: "pathfinder", definition: "Panel used to save and reapply reusable sets of appearance attributes (fills, strokes, effects).", hint: "Saved appearance presets." }
+        ];
+
+        /**
+         * Application Main Controller
+         */
+        class HauntedApp {
+            constructor() {
+                this.allTerms = ALL_ILLUSTRATOR_TERMS;
+                this.activeCategory = 'all'; // Default
+                this.deck = [...this.allTerms];
+                
+                this.masteredTerms = new Set(JSON.parse(localStorage.getItem('haunted_mastered_terms')) || []);
+                this.xp = parseInt(localStorage.getItem('haunted_xp')) || 0;
+                this.streak = parseInt(localStorage.getItem('haunted_streak')) || 0;
+                
+                // Accessible SPED & 504 Progress Metrics
+                this.spellsUsed = parseInt(localStorage.getItem('haunted_spells_used')) || 0;
+                this.flashcardsReviewed = parseInt(localStorage.getItem('haunted_fc_reviewed')) || 0;
+                this.gamesPlayed = parseInt(localStorage.getItem('haunted_games_played')) || 0;
+                this.categoriesExplored = new Set(JSON.parse(localStorage.getItem('haunted_cats_explored')) || []);
+                this.unlockedBadges = new Set(JSON.parse(localStorage.getItem('haunted_unlocked_badges')) || []);
+                this.memoryFlippedCount = parseInt(localStorage.getItem('haunted_memory_flipped')) || 0;
+                this.audioToggled = localStorage.getItem('haunted_audio_toggled') === 'true';
+
+                this.soundEnabled = true;
+                this.autoTTS = localStorage.getItem('haunted_auto_tts') === 'true';
+
+                this.voices = [];
+
+                // Pending Mode Launch state
+                this.pendingMode = null;
+
+                // Flashcard State
+                this.currentCardIdx = 0;
+                this.isFlipped = false;
+
+                // Dungeon Mode State
+                this.dungeonHp = 100;
+                this.enemyHp = 100;
+                this.dungeonFloor = 1;
+                this.hintsLeft = 2;
+                this.fiftyLeft = 1;
+                this.dungeonTimer = null;
+                this.timeLeft = 20;
+                this.currentDungeonCard = null;
+
+                // Arcade Mode State
+                this.arcadeScore = 0;
+                this.arcadeTimer = null;
+                this.arcadeTimeLeft = 45;
+                this.currentArcadeCard = null;
+
+                // Memory Game State
+                this.memoryMoves = 0;
+                this.memoryMatches = 0;
+                this.memoryFlippedCards = [];
+
+                // Audio Context
+                this.audioCtx = null;
+
+                this.init();
+            }
+
+            init() {
+                this.updateStatsUI();
+                this.updateTTSButtonUI();
+                this.initVoices();
+                this.initCanvasBackground();
+            }
+
+            initVoices() {
+                if (!('speechSynthesis' in window)) return;
+                
+                this.populateVoices();
+                if (speechSynthesis.onvoiceschanged !== undefined) {
+                    speechSynthesis.onvoiceschanged = () => this.populateVoices();
+                }
+            }
+
+            populateVoices() {
+                if (!('speechSynthesis' in window)) return;
+                const allVoices = window.speechSynthesis.getVoices();
+                
+                // Highlighted allowed voices filter
+                const allowedVoices = [
+                    'microsoft david',
+                    'microsoft mark',
+                    'microsoft zira',
+                    'google us english',
+                    'google español',
+                    'google español de estados unidos'
+                ];
+
+                const filtered = allVoices.filter(voice => {
+                    const nameLower = voice.name.toLowerCase();
+                    return allowedVoices.some(target => nameLower.includes(target));
+                });
+
+                // Fallback to available voices if none of the specific browser voices exist on the device
+                this.voices = filtered.length > 0 ? filtered : allVoices;
+
+                const select = document.getElementById('voiceSelect');
+                if (!select) return;
+
+                const previousVal = select.value;
+                select.innerHTML = '';
+
+                if (this.voices.length === 0) {
+                    const opt = document.createElement('option');
+                    opt.textContent = 'Default Voice (System)';
+                    opt.value = '';
+                    select.appendChild(opt);
+                    return;
+                }
+
+                let selectedIdx = 0;
+                this.voices.forEach((voice, idx) => {
+                    const option = document.createElement('option');
+                    option.value = idx;
+                    option.textContent = `${voice.name} (${voice.lang})`;
+                    if (voice.default) selectedIdx = idx;
+                    select.appendChild(option);
+                });
+
+                // Restore previously selected voice option if valid, else pick default
+                if (previousVal !== '' && !isNaN(parseInt(previousVal, 10)) && this.voices[parseInt(previousVal, 10)]) {
+                    select.value = previousVal;
+                } else {
+                    select.value = selectedIdx;
+                }
+            }
+
+            onVoiceChange() {
+                const select = document.getElementById('voiceSelect');
+                if (select && this.voices[select.value]) {
+                    const chosen = this.voices[select.value];
+                    this.showToast(`Voice set to: ${chosen.name}`, 'info');
+                }
+            }
+
+            speakText(text, rate = 0.95) {
+                if (!('speechSynthesis' in window)) {
+                    this.showToast('Web Speech API not supported in this browser.', 'error');
+                    return;
+                }
+                window.speechSynthesis.cancel(); // Cancel any ongoing speech
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = rate;
+                utterance.pitch = 1.0;
+
+                const voiceSelect = document.getElementById('voiceSelect');
+                if (voiceSelect && this.voices && this.voices.length > 0) {
+                    const selectedIndex = parseInt(voiceSelect.value, 10);
+                    if (!isNaN(selectedIndex) && this.voices[selectedIndex]) {
+                        utterance.voice = this.voices[selectedIndex];
+                    }
+                }
+
+                window.speechSynthesis.speak(utterance);
+            }
+
+            toggleAutoTTS() {
+                this.autoTTS = !this.autoTTS;
+                localStorage.setItem('haunted_auto_tts', this.autoTTS);
+                this.updateTTSButtonUI();
+                if (this.autoTTS) {
+                    this.speakText('Auto read aloud enabled.');
+                    this.showToast('Auto Read-Aloud (TTS) Enabled', 'success');
+                } else {
+                    if ('speechSynthesis' in window) window.speechSynthesis.cancel();
+                    this.showToast('Auto Read-Aloud Disabled', 'info');
+                }
+            }
+
+            updateTTSButtonUI() {
+                const btnLabel = document.getElementById('ttsBtnLabel');
+                const icon = document.getElementById('ttsIcon');
+                if (btnLabel && icon) {
+                    btnLabel.innerText = this.autoTTS ? 'Auto Read: On' : 'Auto Read: Off';
+                    icon.className = this.autoTTS ? 'fa-solid fa-volume-high text-cyan-400 animate-pulse' : 'fa-solid fa-comment-dots text-cyan-400';
+                }
+            }
+
+            speakCurrentDungeonQuestion() {
+                if (this.currentDungeonCard) {
+                    this.speakText(`What Illustrator term matches: ${this.currentDungeonCard.definition}`);
+                }
+            }
+
+            speakCurrentArcadePrompt() {
+                if (this.currentArcadeCard) {
+                    this.speakText(this.currentArcadeCard.definition);
+                }
+            }
+
+            quickStartRandom() {
+                const modes = ['dungeon', 'arcade', 'memory', 'flashcards'];
+                const randomMode = modes[Math.floor(Math.random() * modes.length)];
+                this.openChunkSelector(randomMode);
+            }
+
+            // Web Audio API Synthesizer
+            playSound(type) {
+                if (!this.soundEnabled) return;
+                try {
+                    if (!this.audioCtx) {
+                        this.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                    }
+                    const ctx = this.audioCtx;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+
+                    const now = ctx.currentTime;
+
+                    if (type === 'correct') {
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(523.25, now);
+                        osc.frequency.exponentialRampToValueAtTime(880, now + 0.2);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3);
+                        osc.start(now);
+                        osc.stop(now + 0.3);
+                    } else if (type === 'wrong') {
+                        osc.type = 'sawtooth';
+                        osc.frequency.setValueAtTime(220, now);
+                        osc.frequency.linearRampToValueAtTime(110, now + 0.3);
+                        gain.gain.setValueAtTime(0.3, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.35);
+                        osc.start(now);
+                        osc.stop(now + 0.35);
+                    } else if (type === 'flip') {
+                        osc.type = 'triangle';
+                        osc.frequency.setValueAtTime(400, now);
+                        osc.frequency.exponentialRampToValueAtTime(600, now + 0.1);
+                        gain.gain.setValueAtTime(0.15, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+                        osc.start(now);
+                        osc.stop(now + 0.1);
+                    } else if (type === 'spell') {
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(300, now);
+                        osc.frequency.exponentialRampToValueAtTime(1200, now + 0.4);
+                        gain.gain.setValueAtTime(0.2, now);
+                        gain.gain.exponentialRampToValueAtTime(0.01, now + 0.4);
+                        osc.start(now);
+                        osc.stop(now + 0.4);
+                    }
+                } catch(e) { }
+            }
+
+            toggleSound() {
+                this.soundEnabled = !this.soundEnabled;
+                this.audioToggled = true;
+                const icon = document.getElementById('soundIcon');
+                icon.className = this.soundEnabled ? 'fa-solid fa-volume-high text-spooky-orange' : 'fa-solid fa-volume-xmark text-slate-500';
+                this.showToast(this.soundEnabled ? 'Sound SFX Enabled' : 'Sound SFX Muted', 'info');
+                this.updateStatsUI();
+            }
+
+            showToast(msg, type = 'info') {
+                const container = document.getElementById('toastContainer');
+                const toast = document.createElement('div');
+                let colorClass = 'border-purple-500 bg-spooky-card text-purple-200';
+                if (type === 'success') colorClass = 'border-spooky-green bg-spooky-card text-spooky-green';
+                if (type === 'error') colorClass = 'border-spooky-crimson bg-spooky-card text-red-300';
+
+                toast.className = `px-4 py-2.5 rounded-xl border ${colorClass} text-xs font-mono shadow-xl transition-all duration-300 flex items-center gap-2 pointer-events-auto`;
+                toast.innerHTML = `<i class="fa-solid fa-ghost"></i> <span>${msg}</span>`;
+                container.appendChild(toast);
+                setTimeout(() => {
+                    toast.classList.add('opacity-0', 'translate-x-4');
+                    setTimeout(() => toast.remove(), 300);
+                }, 2500);
+            }
+
+            updateStatsUI() {
+                document.getElementById('statXP').innerText = this.xp;
+                document.getElementById('statStreak').innerText = this.streak;
+                document.getElementById('statMastered').innerText = this.masteredTerms.size;
+                document.getElementById('statTotal').innerText = this.allTerms.length;
+
+                localStorage.setItem('haunted_xp', this.xp);
+                localStorage.setItem('haunted_streak', this.streak);
+                localStorage.setItem('haunted_mastered_terms', JSON.stringify(Array.from(this.masteredTerms)));
+                localStorage.setItem('haunted_spells_used', this.spellsUsed);
+                localStorage.setItem('haunted_fc_reviewed', this.flashcardsReviewed);
+                localStorage.setItem('haunted_games_played', this.gamesPlayed);
+                localStorage.setItem('haunted_cats_explored', JSON.stringify(Array.from(this.categoriesExplored)));
+                localStorage.setItem('haunted_unlocked_badges', JSON.stringify(Array.from(this.unlockedBadges)));
+                localStorage.setItem('haunted_memory_flipped', this.memoryFlippedCount);
+                localStorage.setItem('haunted_audio_toggled', this.audioToggled);
+
+                this.renderBadges();
+            }
+
+            switchView(viewName) {
+                if (this.dungeonTimer) clearInterval(this.dungeonTimer);
+                if (this.arcadeTimer) clearInterval(this.arcadeTimer);
+
+                const views = ['viewHome', 'viewDungeon', 'viewArcade', 'viewMemory', 'viewFlashcards'];
+                views.forEach(v => {
+                    const el = document.getElementById(v);
+                    if (el) el.classList.add('hidden');
+                });
+
+                const target = document.getElementById('view' + viewName.charAt(0).toUpperCase() + viewName.slice(1));
+                if (target) target.classList.remove('hidden');
+
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            openChunkSelector(mode) {
+                this.pendingMode = mode;
+                const modal = document.getElementById('chunkModal');
+                const grid = document.getElementById('chunkGrid');
+                
+                const modeTitles = {
+                    dungeon: 'Phantom Dungeon Battle',
+                    arcade: 'Node Slice Arcade',
+                    memory: 'Graveyard Memory Matching',
+                    flashcards: 'Spooky Study Flashcards'
+                };
+                document.getElementById('modalModeTitle').innerText = modeTitles[mode] || 'Select Practice Chunk';
+
+                grid.innerHTML = '';
+                CHUNK_CATEGORIES.forEach(cat => {
+                    const count = cat.id === 'all' ? this.allTerms.length : this.allTerms.filter(t => t.category === cat.id).length;
+                    const btn = document.createElement('button');
+                    btn.className = "p-4 rounded-xl bg-slate-900 border border-spooky-border hover:border-spooky-orange hover:bg-purple-950/40 text-left transition group flex flex-col justify-between";
+                    btn.onclick = () => this.selectChunkAndStart(cat.id);
+                    btn.innerHTML = `
+                        <div>
+                            <div class="flex items-center justify-between">
+                                <h4 class="font-bold text-sm text-slate-100 group-hover:text-spooky-orange transition">${cat.name}</h4>
+                                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-purple-900/50 text-purple-300 border border-purple-500/30">${count} terms</span>
+                            </div>
+                            <p class="text-xs text-slate-400 mt-1 font-mono">${cat.desc}</p>
+                        </div>
+                    `;
+                    grid.appendChild(btn);
+                });
+
+                modal.classList.remove('hidden');
+            }
+
+            closeChunkModal() {
+                document.getElementById('chunkModal').classList.add('hidden');
+                this.pendingMode = null;
+            }
+
+            selectChunkAndStart(categoryId) {
+                const targetMode = this.pendingMode; // Capture selected mode before modal close resets it
+                this.activeCategory = categoryId;
+                if (categoryId === 'all') {
+                    this.deck = [...this.allTerms];
+                } else {
+                    this.deck = this.allTerms.filter(t => t.category === categoryId);
+                }
+
+                this.categoriesExplored.add(categoryId);
+                this.gamesPlayed++;
+                this.updateStatsUI();
+
+                const catObj = CHUNK_CATEGORIES.find(c => c.id === categoryId);
+                const categoryLabel = catObj ? catObj.name : 'All Terms';
+
+                this.closeChunkModal();
+
+                if (targetMode === 'dungeon') {
+                    document.getElementById('dungeonCategoryBadge').innerText = categoryLabel;
+                    this.startDungeonMode();
+                } else if (targetMode === 'arcade') {
+                    document.getElementById('arcadeCategoryBadge').innerText = categoryLabel;
+                    this.startArcadeMode();
+                } else if (targetMode === 'memory') {
+                    document.getElementById('memoryCategoryBadge').innerText = categoryLabel;
+                    this.startMemoryMode();
+                } else if (targetMode === 'flashcards') {
+                    document.getElementById('flashcardCategoryBadge').innerText = categoryLabel;
+                    this.startFlashcardsMode();
+                }
+            }
+
+            startDungeonMode() {
+                this.dungeonHp = 100;
+                this.enemyHp = 100;
+                this.dungeonFloor = 1;
+                this.hintsLeft = 2;
+                this.fiftyLeft = 1;
+                this.switchView('dungeon');
+                this.loadDungeonQuestion();
+            }
+
+            loadDungeonQuestion() {
+                if (this.dungeonTimer) clearInterval(this.dungeonTimer);
+                this.timeLeft = 20;
+
+                this.currentDungeonCard = this.deck[Math.floor(Math.random() * this.deck.length)];
+
+                document.getElementById('dungeonStage').innerText = `Floor ${this.dungeonFloor} / 10`;
+                document.getElementById('dungeonProgress').style.width = `${(this.dungeonFloor / 10) * 100}%`;
+                document.getElementById('heroHpBar').style.width = `${this.dungeonHp}%`;
+                document.getElementById('heroHpText').innerText = `${this.dungeonHp} / 100 HP`;
+                document.getElementById('enemyHpBar').style.width = `${this.enemyHp}%`;
+                document.getElementById('enemyHpText').innerText = `${this.enemyHp} / 100 HP`;
+
+                document.getElementById('spellHint').disabled = (this.hintsLeft <= 0);
+                document.getElementById('hintCount').innerText = this.hintsLeft;
+                document.getElementById('spell5050').disabled = (this.fiftyLeft <= 0);
+                document.getElementById('fiftyCount').innerText = this.fiftyLeft;
+
+                const qText = `What Illustrator term matches: "${this.currentDungeonCard.definition}"?`;
+                document.getElementById('dungeonQuestion').innerText = qText;
+
+                if (this.autoTTS) {
+                    this.speakCurrentDungeonQuestion();
+                }
+
+                // Generate options using full vocabulary list for distractor variety
+                let distractors = this.allTerms.filter(c => c.term !== this.currentDungeonCard.term);
+                distractors = this.shuffleArray(distractors).slice(0, 3);
+                let options = this.shuffleArray([this.currentDungeonCard, ...distractors]);
+
+                const optsContainer = document.getElementById('dungeonOptions');
+                optsContainer.innerHTML = '';
+                options.forEach((opt, idx) => {
+                    const btn = document.createElement('button');
+                    btn.className = "p-4 rounded-xl bg-slate-900/80 border border-spooky-border hover:border-spooky-orange hover:bg-purple-950/40 text-left text-sm font-mono text-slate-200 transition flex items-center justify-between gap-3 group";
+                    btn.onclick = () => this.answerDungeon(opt.term === this.currentDungeonCard.term, btn);
+
+                    const labelDiv = document.createElement('div');
+                    labelDiv.className = "flex items-start gap-3 flex-1 min-w-0 pointer-events-none";
+                    labelDiv.innerHTML = `<span class="w-6 h-6 rounded-lg bg-spooky-border text-purple-300 group-hover:bg-spooky-orange group-hover:text-black flex items-center justify-center font-bold text-xs shrink-0 transition">${String.fromCharCode(65 + idx)}</span> <span class="option-text mt-0.5">${opt.term}</span>`;
+
+                    const speakBtn = document.createElement('button');
+                    speakBtn.type = "button";
+                    speakBtn.className = "p-2 rounded-lg bg-purple-900/40 hover:bg-purple-800 text-cyan-300 border border-purple-500/40 transition shrink-0";
+                    speakBtn.title = "Read answer choice aloud";
+                    speakBtn.innerHTML = `<i class="fa-solid fa-volume-high text-xs"></i>`;
+                    speakBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.speakText(opt.term);
+                    };
+
+                    btn.appendChild(labelDiv);
+                    btn.appendChild(speakBtn);
+                    optsContainer.appendChild(btn);
+                });
+
+                document.getElementById('dungeonTimer').innerText = `🕒 ${this.timeLeft}s`;
+                this.dungeonTimer = setInterval(() => {
+                    this.timeLeft--;
+                    document.getElementById('dungeonTimer').innerText = `🕒 ${this.timeLeft}s`;
+                    if (this.timeLeft <= 0) {
+                        clearInterval(this.dungeonTimer);
+                        this.answerDungeon(false, null);
+                    }
+                }, 1000);
+            }
+
+            useSpell(type) {
+                this.spellsUsed++;
+                this.updateStatsUI();
+
+                if (type === 'hint' && this.hintsLeft > 0) {
+                    this.hintsLeft--;
+                    this.playSound('spell');
+                    this.showToast(`Ghost Hint: ${this.currentDungeonCard.hint || "Relates to vector design"}`, "info");
+                    document.getElementById('spellHint').disabled = (this.hintsLeft <= 0);
+                    document.getElementById('hintCount').innerText = this.hintsLeft;
+                } else if (type === 'fifty' && this.fiftyLeft > 0) {
+                    this.fiftyLeft--;
+                    this.playSound('spell');
+                    document.getElementById('spell5050').disabled = (this.fiftyLeft <= 0);
+                    document.getElementById('fiftyCount').innerText = this.fiftyLeft;
+
+                    const buttons = Array.from(document.querySelectorAll('#dungeonOptions button'));
+                    let removed = 0;
+                    buttons.forEach(btn => {
+                        const txt = btn.querySelector('.option-text').innerText;
+                        if (txt !== this.currentDungeonCard.term && removed < 2) {
+                            btn.style.opacity = '0.2';
+                            btn.disabled = true;
+                            removed++;
+                        }
+                    });
+                }
+            }
+
+            answerDungeon(isCorrect, buttonEl) {
+                if (this.dungeonTimer) clearInterval(this.dungeonTimer);
+
+                if (isCorrect) {
+                    this.playSound('correct');
+                    if (buttonEl) buttonEl.classList.add('bg-green-950/80', 'border-spooky-green');
+                    this.xp += 25;
+                    this.streak++;
+                    this.masteredTerms.add(this.currentDungeonCard.term);
+                    this.enemyHp -= 35;
+                    this.showToast("+25 XP! Critical Hit on Bézier Banshee!", "success");
+
+                    if (this.enemyHp <= 0) {
+                        this.dungeonFloor++;
+                        this.enemyHp = 100;
+                        if (this.dungeonFloor > 10) {
+                            this.showToast("🎃 VICTORY! You cleared all 10 Dungeon Floors!", "success");
+                            this.xp += 200;
+                            this.updateStatsUI();
+                            setTimeout(() => this.switchView('home'), 1500);
+                            return;
+                        }
+                    }
+                } else {
+                    this.playSound('wrong');
+                    if (buttonEl) buttonEl.classList.add('bg-red-950/80', 'border-spooky-crimson');
+                    this.streak = 0;
+                    this.dungeonHp -= 20;
+                    this.showToast(`Curse Strike! Correct answer: ${this.currentDungeonCard.term}`, "error");
+
+                    if (this.dungeonHp <= 0) {
+                        this.showToast("Defeated in the Vector Lab! Try again!", "error");
+                        setTimeout(() => this.switchView('home'), 1500);
+                        return;
+                    }
+                }
+
+                this.updateStatsUI();
+                setTimeout(() => this.loadDungeonQuestion(), 1200);
+            }
+
+            startArcadeMode() {
+                this.arcadeScore = 0;
+                this.arcadeTimeLeft = 45;
+                this.switchView('arcade');
+                this.startArcadeRound();
+                this.arcadeTimer = setInterval(() => {
+                    this.arcadeTimeLeft--;
+                    document.getElementById('arcadeTime').innerText = this.arcadeTimeLeft + 's';
+                    if (this.arcadeTimeLeft <= 0) {
+                        clearInterval(this.arcadeTimer);
+                        this.endArcadeGame();
+                    }
+                }, 1000);
+            }
+
+            startArcadeRound() {
+                this.currentArcadeCard = this.deck[Math.floor(Math.random() * this.deck.length)];
+                document.getElementById('arcadePrompt').innerText = `"${this.currentArcadeCard.definition}"`;
+
+                if (this.autoTTS) {
+                    this.speakCurrentArcadePrompt();
+                }
+
+                let distractors = this.allTerms.filter(c => c.term !== this.currentArcadeCard.term);
+                distractors = this.shuffleArray(distractors).slice(0, 3);
+                let options = this.shuffleArray([this.currentArcadeCard, ...distractors]);
+
+                const container = document.getElementById('arcadeNodesContainer');
+                container.innerHTML = '';
+
+                options.forEach(opt => {
+                    const node = document.createElement('button');
+                    node.className = "p-4 rounded-2xl bg-spooky-card border-2 border-spooky-purple hover:border-spooky-green text-sm font-mono text-slate-100 shadow-xl hover:scale-110 transition animate-float flex flex-col items-center gap-2";
+                    node.style.animationDuration = `${3 + Math.random() * 2}s`;
+                    node.onclick = () => this.clickArcadeNode(opt.term === this.currentArcadeCard.term, node);
+
+                    const topRow = document.createElement('div');
+                    topRow.className = "flex items-center gap-2";
+
+                    const iconDiv = document.createElement('div');
+                    iconDiv.className = "w-8 h-8 rounded-full bg-spooky-orange/20 text-spooky-orange flex items-center justify-center font-bold text-xs";
+                    iconDiv.innerHTML = `<i class="fa-solid fa-bezier-curve"></i>`;
+
+                    const speakBtn = document.createElement('button');
+                    speakBtn.type = "button";
+                    speakBtn.className = "p-1.5 rounded-lg bg-purple-900/50 hover:bg-purple-800 text-cyan-300 border border-purple-500/40 transition shrink-0";
+                    speakBtn.title = "Read option aloud";
+                    speakBtn.innerHTML = `<i class="fa-solid fa-volume-high text-xs"></i>`;
+                    speakBtn.onclick = (e) => {
+                        e.stopPropagation();
+                        this.speakText(opt.term);
+                    };
+
+                    topRow.appendChild(iconDiv);
+                    topRow.appendChild(speakBtn);
+
+                    const termSpan = document.createElement('span');
+                    termSpan.innerText = opt.term;
+
+                    node.appendChild(topRow);
+                    node.appendChild(termSpan);
+                    container.appendChild(node);
+                });
+            }
+
+            clickArcadeNode(isCorrect, nodeEl) {
+                if (isCorrect) {
+                    this.playSound('correct');
+                    this.arcadeScore += 50;
+                    this.xp += 15;
+                    this.streak++;
+                    this.masteredTerms.add(this.currentArcadeCard.term);
+                    document.getElementById('arcadeScore').innerText = this.arcadeScore;
+                    this.showToast("Sliced Anchor Point! +50 Pts", "success");
+                    this.updateStatsUI();
+                    this.startArcadeRound();
+                } else {
+                    this.playSound('wrong');
+                    this.streak = 0;
+                    this.showToast("Wrong node!", "error");
+                    this.updateStatsUI();
+                    nodeEl.style.opacity = '0.3';
+                    nodeEl.disabled = true;
+                }
+            }
+
+            endArcadeGame() {
+                this.showToast(`Arcade Time Up! Total Score: ${this.arcadeScore}`, "info");
+                setTimeout(() => this.switchView('home'), 2000);
+            }
+
+            startMemoryMode() {
+                this.switchView('memory');
+                this.memoryMoves = 0;
+                this.memoryMatches = 0;
+                this.memoryFlippedCards = [];
+                document.getElementById('memoryMoves').innerText = '0';
+                document.getElementById('memoryMatches').innerText = '0/6';
+
+                // Select 6 cards from current active deck
+                let subset = this.shuffleArray([...this.deck]).slice(0, 6);
+                let tiles = [];
+
+                subset.forEach((c, idx) => {
+                    tiles.push({ id: idx, type: 'term', text: c.term, matchKey: c.term });
+                    tiles.push({ id: idx, type: 'def', text: c.definition, matchKey: c.term });
+                });
+
+                tiles = this.shuffleArray(tiles);
+                const grid = document.getElementById('memoryGrid');
+                grid.innerHTML = '';
+
+                tiles.forEach((tile, index) => {
+                    const card = document.createElement('div');
+                    card.className = "h-32 rounded-xl bg-spooky-card border border-spooky-border p-3 flex items-center justify-center text-center cursor-pointer hover:border-purple-500 transition select-none shadow-md";
+                    card.dataset.index = index;
+                    card.dataset.matchKey = tile.matchKey;
+                    card.innerHTML = `
+                        <div class="card-inner flex flex-col items-center justify-center text-purple-400">
+                            <i class="fa-solid fa-monument text-3xl mb-1"></i>
+                            <span class="text-[10px] font-mono text-slate-500">Tombstone #${index + 1}</span>
+                        </div>
+                    `;
+                    card.onclick = () => this.flipMemoryTile(card, tile);
+                    grid.appendChild(card);
+                });
+            }
+
+            flipMemoryTile(cardEl, tileData) {
+                if (cardEl.classList.contains('matched') || this.memoryFlippedCards.length >= 2 || this.memoryFlippedCards.some(c => c.el === cardEl)) return;
+
+                this.memoryFlippedCount++;
+                this.updateStatsUI();
+
+                this.playSound('flip');
+                cardEl.classList.add('bg-purple-950/60', 'border-purple-400');
+                
+                const cardContainer = document.createElement('div');
+                cardContainer.className = "p-2 text-xs font-mono text-slate-100 flex flex-col justify-between items-center h-full w-full relative";
+
+                const topBar = document.createElement('div');
+                topBar.className = "flex items-center justify-between w-full";
+
+                const labelSpan = document.createElement('span');
+                labelSpan.className = "text-[9px] text-spooky-orange font-bold uppercase";
+                labelSpan.innerText = tileData.type === 'term' ? 'Term' : 'Definition';
+
+                const speakBtn = document.createElement('button');
+                speakBtn.type = "button";
+                speakBtn.className = "p-1 rounded bg-purple-900/50 hover:bg-purple-800 text-cyan-300 transition";
+                speakBtn.title = "Read Aloud";
+                speakBtn.innerHTML = `<i class="fa-solid fa-volume-high text-[10px]"></i>`;
+                speakBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    this.speakText(tileData.text);
+                };
+
+                topBar.appendChild(labelSpan);
+                topBar.appendChild(speakBtn);
+
+                const textPara = document.createElement('p');
+                textPara.className = "leading-tight line-clamp-3 text-center my-auto";
+                textPara.innerText = tileData.text;
+
+                cardContainer.appendChild(topBar);
+                cardContainer.appendChild(textPara);
+
+                cardEl.innerHTML = '';
+                cardEl.appendChild(cardContainer);
+
+                if (this.autoTTS) {
+                    this.speakText(tileData.text);
+                }
+
+                this.memoryFlippedCards.push({ el: cardEl, data: tileData });
+
+                if (this.memoryFlippedCards.length === 2) {
+                    this.memoryMoves++;
+                    document.getElementById('memoryMoves').innerText = this.memoryMoves;
+
+                    const [c1, c2] = this.memoryFlippedCards;
+                    if (c1.data.matchKey === c2.data.matchKey && c1.data.type !== c2.data.type) {
+                        this.playSound('correct');
+                        c1.el.classList.add('matched', 'border-spooky-green', 'bg-green-950/30');
+                        c2.el.classList.add('matched', 'border-spooky-green', 'bg-green-950/30');
+                        this.memoryMatches++;
+                        document.getElementById('memoryMatches').innerText = `${this.memoryMatches}/6`;
+                        this.xp += 30;
+                        this.masteredTerms.add(c1.data.matchKey);
+                        this.updateStatsUI();
+                        this.memoryFlippedCards = [];
+
+                        if (this.memoryMatches === 6) {
+                            this.showToast("🪦 Graveyard Cleared! +180 XP", "success");
+                            setTimeout(() => this.switchView('home'), 2000);
+                        }
+                    } else {
+                        this.playSound('wrong');
+                        setTimeout(() => {
+                            c1.el.classList.remove('bg-purple-950/60', 'border-purple-400');
+                            c2.el.classList.remove('bg-purple-950/60', 'border-purple-400');
+                            c1.el.innerHTML = `
+                                <div class="card-inner flex flex-col items-center justify-center text-purple-400">
+                                    <i class="fa-solid fa-monument text-3xl mb-1"></i>
+                                    <span class="text-[10px] font-mono text-slate-500">Tombstone</span>
+                                </div>
+                            `;
+                            c2.el.innerHTML = `
+                                <div class="card-inner flex flex-col items-center justify-center text-purple-400">
+                                    <i class="fa-solid fa-monument text-3xl mb-1"></i>
+                                    <span class="text-[10px] font-mono text-slate-500">Tombstone</span>
+                                </div>
+                            `;
+                            this.memoryFlippedCards = [];
+                        }, 1200);
+                    }
+                }
+            }
+
+            startFlashcardsMode() {
+                this.currentCardIdx = 0;
+                this.isFlipped = false;
+                this.switchView('flashcards');
+                this.renderFlashcard();
+            }
+
+            renderFlashcard() {
+                const card = this.deck[this.currentCardIdx];
+                document.getElementById('flashcardTracker').innerText = `Card ${this.currentCardIdx + 1} / ${this.deck.length}`;
+                document.getElementById('flashcardTerm').innerText = card.term;
+                document.getElementById('flashcardDef').innerText = card.definition;
+                document.getElementById('flashcardHintText').innerText = card.hint ? `Hint: ${card.hint}` : '';
+
+                const inner = document.getElementById('flashcardInner');
+                inner.classList.remove('rotate-y-180');
+                this.isFlipped = false;
+            }
+
+            flipCard() {
+                this.playSound('flip');
+                const inner = document.getElementById('flashcardInner');
+                this.isFlipped = !this.isFlipped;
+                if (this.isFlipped) {
+                    inner.classList.add('rotate-y-180');
+                } else {
+                    inner.classList.remove('rotate-y-180');
+                }
+            }
+
+            nextCard() {
+                this.flashcardsReviewed++;
+                this.updateStatsUI();
+                this.currentCardIdx = (this.currentCardIdx + 1) % this.deck.length;
+                this.renderFlashcard();
+            }
+
+            prevCard() {
+                this.flashcardsReviewed++;
+                this.updateStatsUI();
+                this.currentCardIdx = (this.currentCardIdx - 1 + this.deck.length) % this.deck.length;
+                this.renderFlashcard();
+            }
+
+            markMastery(isMastered) {
+                const card = this.deck[this.currentCardIdx];
+                if (isMastered) {
+                    this.masteredTerms.add(card.term);
+                    this.xp += 10;
+                    this.showToast(`Mastered "${card.term}"!`, 'success');
+                } else {
+                    this.masteredTerms.delete(card.term);
+                    this.showToast(`Marked "${card.term}" for review`, 'info');
+                }
+                this.flashcardsReviewed++;
+                this.updateStatsUI();
+                this.nextCard();
+            }
+
+            speakTerm() {
+                const term = this.deck[this.currentCardIdx].term;
+                this.speakText(term, 0.9);
+            }
+
+            speakDef() {
+                const def = this.deck[this.currentCardIdx].definition;
+                this.speakText(def, 0.95);
+            }
+
+            renderBadges() {
+                const badges = [
+                    // Highly accessible badges for SPED/504 students
+                    { id: 'b1', title: 'First Steps', desc: 'Play 1 game or review 1 card', icon: 'fa-shoe-prints', req: (this.gamesPlayed >= 1 || this.flashcardsReviewed >= 1 || this.xp >= 10) },
+                    { id: 'b2', title: 'Spark of Magic', desc: 'Earn 25 XP', icon: 'fa-wand-magic', req: this.xp >= 25 },
+                    { id: 'b3', title: 'Apprentice Alchemist', desc: 'Earn 100 XP', icon: 'fa-wand-magic-sparkles', req: this.xp >= 100 },
+                    { id: 'b4', title: 'Spooky Scholar', desc: 'Earn 250 XP', icon: 'fa-graduation-cap', req: this.xp >= 250 },
+                    { id: 'b5', title: 'Vector Grandmaster', desc: 'Earn 500 XP', icon: 'fa-crown', req: this.xp >= 500 },
+                    { id: 'b6', title: 'Flame Starter', desc: 'Get a 2-Streak', icon: 'fa-fire-flame-simple', req: this.streak >= 2 },
+                    { id: 'b7', title: 'Fire Sorcerer', desc: 'Get a 3-Streak', icon: 'fa-fire', req: this.streak >= 3 },
+                    { id: 'b8', title: 'Streak Legend', desc: 'Get a 5-Streak', icon: 'fa-dragon', req: this.streak >= 5 },
+                    { id: 'b9', title: 'Spell Weaver', desc: 'Use 1 Spell Scroll or Hint', icon: 'fa-scroll', req: this.spellsUsed >= 1 },
+                    { id: 'b10', title: 'Lab Explorer', desc: 'Try 2 Practice Categories', icon: 'fa-compass', req: this.categoriesExplored.size >= 2 },
+                    { id: 'b11', title: 'Category Master', desc: 'Try 4 Practice Categories', icon: 'fa-map-location-dot', req: this.categoriesExplored.size >= 4 },
+                    { id: 'b12', title: 'Audio Wizard', desc: 'Toggle Sound SFX', icon: 'fa-sliders', req: this.audioToggled },
+                    { id: 'b13', title: 'Tombstone Touch', desc: 'Flip a Memory Tombstone', icon: 'fa-hand-pointer', req: this.memoryFlippedCount >= 1 },
+                    { id: 'b14', title: 'Graveyard Hero', desc: 'Complete a Memory Pair', icon: 'fa-monument', req: this.memoryMatches >= 1 },
+                    { id: 'b15', title: 'Node Slicer', desc: 'Score 50+ in Arcade', icon: 'fa-bullseye', req: this.arcadeScore >= 50 },
+                    { id: 'b16', title: 'Dungeon Crawler', desc: 'Reach Floor 2 in Dungeon', icon: 'fa-dungeon', req: this.dungeonFloor >= 2 },
+                    { id: 'b17', title: 'Flashcard Reader', desc: 'Review 5 Flashcards', icon: 'fa-book-open-reader', req: this.flashcardsReviewed >= 5 },
+                    { id: 'b18', title: 'Little Vector', desc: 'Master 3 Terms', icon: 'fa-shapes', req: this.masteredTerms.size >= 3 },
+                    { id: 'b19', title: 'Path Scholar', desc: 'Master 15 Terms', icon: 'fa-bezier-curve', req: this.masteredTerms.size >= 15 },
+                    { id: 'b20', title: 'Mansion Veteran', desc: 'Play 3 Game Rounds', icon: 'fa-ghost', req: this.gamesPlayed >= 3 }
+                ];
+
+                const container = document.getElementById('badgesGrid');
+                container.innerHTML = '';
+                let unlockedCount = 0;
+
+                badges.forEach(b => {
+                    const isUnlocked = b.req;
+                    if (isUnlocked) {
+                        unlockedCount++;
+                        // Trigger toast notification on new unlocks
+                        if (!this.unlockedBadges.has(b.id)) {
+                            this.unlockedBadges.add(b.id);
+                            this.playSound('spell');
+                            this.showToast(`🏆 Badge Unlocked: ${b.title}!`, 'success');
+                        }
+                    }
+
+                    const card = document.createElement('div');
+                    card.className = `p-2.5 rounded-xl border flex flex-col items-center text-center space-y-1 font-mono text-xs transition-all duration-300 ${
+                        isUnlocked 
+                        ? 'bg-purple-950/40 border-spooky-green text-slate-100 shadow-md shadow-green-950/30 hover:scale-105' 
+                        : 'bg-slate-900/40 border-slate-800 text-slate-600 opacity-50'
+                    }`;
+                    card.innerHTML = `
+                        <div class="w-8 h-8 rounded-full ${isUnlocked ? 'bg-spooky-green/20 text-spooky-green glow-green' : 'bg-slate-800 text-slate-600'} flex items-center justify-center text-sm shrink-0">
+                            <i class="fa-solid ${b.icon}"></i>
+                        </div>
+                        <span class="font-bold text-[11px] leading-tight line-clamp-1 ${isUnlocked ? 'text-purple-200' : 'text-slate-500'}">${b.title}</span>
+                        <span class="text-[9px] text-slate-400 leading-tight line-clamp-2">${b.desc}</span>
+                    `;
+                    container.appendChild(card);
+                });
+
+                document.getElementById('badgeCountText').innerText = `${unlockedCount} / ${badges.length} Unlocked`;
+            }
+
+            shuffleArray(arr) {
+                let array = [...arr];
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            initCanvasBackground() {
+                const canvas = document.getElementById('bgCanvas');
+                const ctx = canvas.getContext('2d');
+
+                let width = canvas.width = window.innerWidth;
+                let height = canvas.height = window.innerHeight;
+
+                window.addEventListener('resize', () => {
+                    width = canvas.width = window.innerWidth;
+                    height = canvas.height = window.innerHeight;
+                });
+
+                const particles = [];
+                for (let i = 0; i < 35; i++) {
+                    particles.push({
+                        x: Math.random() * width,
+                        y: Math.random() * height,
+                        radius: Math.random() * 3 + 1,
+                        vx: (Math.random() - 0.5) * 0.8,
+                        vy: (Math.random() - 0.5) * 0.8,
+                        color: Math.random() > 0.5 ? '#8b5cf6' : '#22c55e'
+                    });
+                }
+
+                function draw() {
+                    ctx.clearRect(0, 0, width, height);
+
+                    ctx.beginPath();
+                    ctx.strokeStyle = 'rgba(139, 92, 246, 0.15)';
+                    ctx.lineWidth = 1;
+
+                    for (let i = 0; i < particles.length; i++) {
+                        let p = particles[i];
+                        p.x += p.vx;
+                        p.y += p.vy;
+
+                        if (p.x < 0 || p.x > width) p.vx *= -1;
+                        if (p.y < 0 || p.y > height) p.vy *= -1;
+
+                        ctx.fillStyle = p.color;
+                        ctx.beginPath();
+                        ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+                        ctx.fill();
+
+                        ctx.strokeStyle = 'rgba(249, 115, 22, 0.2)';
+                        ctx.strokeRect(p.x - 3, p.y - 3, 6, 6);
+                    }
+
+                    requestAnimationFrame(draw);
+                }
+
+                draw();
+            }
+        }
+
+        // Initialize App on Window Load
+        let app;
+        window.onload = () => {
+            app = new HauntedApp();
+        };
+    </script>
+</body>
+</html>
